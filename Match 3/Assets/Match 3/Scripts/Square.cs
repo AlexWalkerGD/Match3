@@ -4,16 +4,23 @@ using UnityEngine;
 
 public class Square : MonoBehaviour
 {
+
+    private GameController gameController;
     // Start is called before the first frame update
     void Start()
     {
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        rb.isKinematic = true;
+        gameController = FindObjectOfType(typeof(GameController)) as GameController;
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    void OnBecameInvisible()
+    {
+        gameController.isMatching = false;
+        Destroy(this.gameObject);
     }
 }

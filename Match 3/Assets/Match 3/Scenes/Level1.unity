@@ -1220,16 +1220,17 @@ MonoBehaviour:
   - {fileID: 210355354712741671, guid: f285d7835691fab4ebc5f681562c39d8, type: 3}
   - {fileID: 7817032712721060469, guid: 06ebee6ef567dbd4aabd7e34d6a88b25, type: 3}
   - {fileID: 2483963355094347047, guid: 86f17f5ad148fb748a4fda058076195e, type: 3}
-  conquerSquare: {fileID: 3317717485107857469, guid: 03f3412fd13445c4ea8b23da100a1614, type: 3}
   nullSquare: {fileID: 1224400586874895525, guid: 865f0278f0901994a83b63867490b8ae, type: 3}
   iceSquare: {fileID: 6511281013330773833, guid: ebce43976839d994da8f37f02d28fc33, type: 3}
   firstSquareTouched: {fileID: 0}
   secondSquareTouched: {fileID: 0}
+  speedSwap: 0.05
   timerLevel: 0
   timerTxt: {fileID: 859451696}
   countdown: 0
   countdownTxt: {fileID: 1670950389}
   countFinal: 90
+  wait: 0
   fxSource: {fileID: 2099828538}
   fxClique: {fileID: 8300000, guid: a83652b845a46334fbc5a1b8f33e0f71, type: 3}
   fxMatch: {fileID: 8300000, guid: 39fe50a1c08ae3c48bbbd07b189af9c2, type: 3}

@@ -7,24 +7,36 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     //Class by Level Editor
+    [Header("Level Editor")]
     public int level;
     public int timer;
     public int numberColumns;
     public int numberRows;
 
     //Objects to spawn on grid
+    [Header("Grid")]
     public string[]      allSprites;
     public GameObject[]  allSquares;
-    public GameObject    conquerSquare;
     public GameObject    nullSquare;
     public GameObject    iceSquare;
 
-    //Swap of squares
+    //Swap squares
+    [Header("Swap Squares")]
     public GameObject    firstSquareTouched;
     public GameObject    secondSquareTouched;
     public GameObject[,] squaresBidi;
+    public float         speedSwap;
+    public bool          isMoving = false;
+    private Vector3      tempPosition;
+    private Vector3      tempPosition2;
+
+    //Match squares
+    [Header("Match")]
+    public bool    isMatching = false;
+    private int    comboMatch;
 
     //Settings UI
+    [Header("UI")]
     public float    timerLevel;
     public Text     timerTxt;
     public int      countdown;
@@ -32,6 +44,7 @@ public class GameController : MonoBehaviour
     public int      countFinal;
 
     //AudioSource
+    [Header("Audio Source")]
     public AudioSource  fxSource;
     public AudioClip    fxClique;
     public AudioClip    fxMatch;
@@ -58,10 +71,28 @@ public class GameController : MonoBehaviour
         {
             timerLevel -= +Time.deltaTime;
             timerTxt.text = timerLevel.ToString("0");
-        }   
+        }
+
+        if (isMoving)
+        {
+            firstSquareTouched.transform.position = Vector3.MoveTowards(firstSquareTouched.transform.position, tempPosition2, speedSwap);
+            secondSquareTouched.transform.position = Vector3.MoveTowards(secondSquareTouched.transform.position, tempPosition, speedSwap);
+
+            if(firstSquareTouched.transform.position == tempPosition2)
+            {
+                isMoving = false;
+                firstSquareTouched = null;
+                secondSquareTouched = null;
+            }
+
+        }
 
         ReadGrid();
-        Match();
+
+        if (!isMoving && !isMatching)
+        {
+            Match();
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -71,7 +102,6 @@ public class GameController : MonoBehaviour
             {
                 firstSquareTouched = hit.collider.gameObject;
                 fxSource.PlayOneShot(fxClique);
-               // Destroy(hit.collider.gameObject);
             }
         }
 
@@ -81,11 +111,32 @@ public class GameController : MonoBehaviour
         {
             Vector2 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
-            if (hit.collider != null)
+            if (hit.collider != null && firstSquareTouched != null)
             {
-                secondSquareTouched = hit.collider.gameObject;
-                fxSource.PlayOneShot(fxClique);
-                Swap();
+                if (hit.collider.gameObject.transform.position.x == firstSquareTouched.transform.position.x - 1 && hit.collider.gameObject.transform.position.y == firstSquareTouched.transform.position.y)
+                {
+                    secondSquareTouched = hit.collider.gameObject;
+                    fxSource.PlayOneShot(fxClique);
+                    Swap();
+                }
+                else if (hit.collider.gameObject.transform.position.x == firstSquareTouched.transform.position.x + 1 && hit.collider.gameObject.transform.position.y == firstSquareTouched.transform.position.y)
+                {
+                    secondSquareTouched = hit.collider.gameObject;
+                    fxSource.PlayOneShot(fxClique);
+                    Swap();
+                }
+                else if (hit.collider.gameObject.transform.position.y == firstSquareTouched.transform.position.y - 1 && hit.collider.gameObject.transform.position.x == firstSquareTouched.transform.position.x)
+                {
+                    secondSquareTouched = hit.collider.gameObject;
+                    fxSource.PlayOneShot(fxClique);
+                    Swap();
+                }
+                else if (hit.collider.gameObject.transform.position.y == firstSquareTouched.transform.position.y + 1 && hit.collider.gameObject.transform.position.x == firstSquareTouched.transform.position.x)
+                {
+                    secondSquareTouched = hit.collider.gameObject;
+                    fxSource.PlayOneShot(fxClique);
+                    Swap();
+                }
             }
         }
     }
@@ -166,20 +217,13 @@ public class GameController : MonoBehaviour
 
     void Swap()
     {
-        Vector3 tempPosition = firstSquareTouched.transform.position;
-        Vector3 tempPosition2 = secondSquareTouched.transform.position;
+        tempPosition = firstSquareTouched.transform.position;
+        tempPosition2 = secondSquareTouched.transform.position;  
 
-        firstSquareTouched.transform.position = secondSquareTouched.transform.position;
-        secondSquareTouched.transform.position = tempPosition;
-
+        isMoving = true;
+        
         squaresBidi[(int)tempPosition.x, (int)tempPosition.y * -1] = secondSquareTouched;
         squaresBidi[(int)tempPosition2.x, (int)tempPosition2.y * -1] = firstSquareTouched;
-
-        firstSquareTouched = null;
-        secondSquareTouched = null;
-
-        Match();
-
     }
 
     void ReadGrid()
@@ -286,12 +330,22 @@ public class GameController : MonoBehaviour
                         {
                             if (squaresBidi[column, row].name == leftSquare.name && squaresBidi[column, row].name == rightSquare.name)
                             {
+                                isMatching = true;
 
                                 SquareFalling(leftSquare);
                                 SquareFalling(squaresBidi[column, row]);
                                 SquareFalling(rightSquare);
 
-                                Instantiate(conquerSquare, new Vector3(column, row, 0), Quaternion.identity); 
+                                if (countdown >= countFinal)
+                                {
+                                    LoadScreens("ScreenWin");
+                                }
+                                else
+                                {
+                                    countdown += 3;
+                                    countdownTxt.text = countdown.ToString();
+                                    fxSource.PlayOneShot(fxMatch);
+                                }
 
                                 squaresBidi[column - 1, row] = null;
                                 squaresBidi[column, row] = null;
@@ -317,6 +371,17 @@ public class GameController : MonoBehaviour
                                 SquareFalling(squaresBidi[column, row]);
                                 SquareFalling(downSquare);
 
+                                if (countdown >= countFinal)
+                                {
+                                    LoadScreens("ScreenWin");
+                                }
+                                else
+                                {
+                                    countdown += 3;
+                                    countdownTxt.text = countdown.ToString();
+                                    fxSource.PlayOneShot(fxMatch);
+                                }
+
                                 squaresBidi[column, row - 1] = null;
                                 squaresBidi[column, row] = null;
                                 squaresBidi[column, row + 1] = null;                                
@@ -333,17 +398,7 @@ public class GameController : MonoBehaviour
     {
         name.GetComponent<SpriteRenderer>().sortingLayerName = "SquaresFalling";
         name.GetComponent<Rigidbody2D>().isKinematic = false;
-
-        if (countdown >= countFinal)
-        {
-            LoadScreens("ScreenWin");
-        }
-        else
-        {
-            countdown += 3;
-            countdownTxt.text = countdown.ToString();
-            fxSource.PlayOneShot(fxMatch);
-        }
+        name.transform.Find("win").gameObject.SetActive(true);        
     }
 
     void LoadScreens(string name)
