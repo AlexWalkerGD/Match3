@@ -13,7 +13,7 @@ TagManager:
   - UI
   - bg
   - squares
-  - 
+  - match
   - 
   - 
   - 
@@ -40,4 +40,10 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: BackSquares
+    uniqueID: 2663211129
+    locked: 0
+  - name: SquaresFalling
+    uniqueID: 3721803765
     locked: 0

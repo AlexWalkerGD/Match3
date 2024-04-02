@@ -15,6 +15,7 @@ public class GameController : MonoBehaviour
     //Objects to spawn on grid
     public string[]      allSprites;
     public GameObject[]  allSquares;
+    public GameObject    conquerSquare;
     public GameObject    nullSquare;
     public GameObject    iceSquare;
 
@@ -24,14 +25,19 @@ public class GameController : MonoBehaviour
     public GameObject[,] squaresBidi;
 
     //Settings UI
-    public float timerLevel;
-    public Text timerTxt;
-    public int countdown;
-    public Text countdownTxt;
-    public int countFinal;
+    public float    timerLevel;
+    public Text     timerTxt;
+    public int      countdown;
+    public Text     countdownTxt;
+    public int      countFinal;
+
+    //AudioSource
+    public AudioSource  fxSource;
+    public AudioClip    fxClique;
+    public AudioClip    fxMatch;
 
 
-    private void Awake()
+    void Awake()
     {
         LoadLevel();
     }
@@ -64,6 +70,7 @@ public class GameController : MonoBehaviour
             if (hit.collider != null)
             {
                 firstSquareTouched = hit.collider.gameObject;
+                fxSource.PlayOneShot(fxClique);
                // Destroy(hit.collider.gameObject);
             }
         }
@@ -76,8 +83,9 @@ public class GameController : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
             if (hit.collider != null)
             {
-                 secondSquareTouched = hit.collider.gameObject;
-                 Swap();
+                secondSquareTouched = hit.collider.gameObject;
+                fxSource.PlayOneShot(fxClique);
+                Swap();
             }
         }
     }
@@ -278,23 +286,16 @@ public class GameController : MonoBehaviour
                         {
                             if (squaresBidi[column, row].name == leftSquare.name && squaresBidi[column, row].name == rightSquare.name)
                             {
-                                leftSquare.GetComponent<Rigidbody2D>().isKinematic = false;
-                                squaresBidi[column, row].GetComponent<Rigidbody2D>().isKinematic = false;
-                                rightSquare.GetComponent<Rigidbody2D>().isKinematic = false;
+
+                                SquareFalling(leftSquare);
+                                SquareFalling(squaresBidi[column, row]);
+                                SquareFalling(rightSquare);
+
+                                Instantiate(conquerSquare, new Vector3(column, row, 0), Quaternion.identity); 
 
                                 squaresBidi[column - 1, row] = null;
                                 squaresBidi[column, row] = null;
-                                squaresBidi[column +1, row] = null;
-
-                                if (countdown >= countFinal )
-                                {
-                                    LoadScreens("ScreenWin");
-                                }
-                                else
-                                {
-                                    countdown += 3;
-                                    countdownTxt.text = countdown.ToString();
-                                }                          
+                                squaresBidi[column +1, row] = null;                      
                             }
                         }                       
                     }                   
@@ -312,16 +313,13 @@ public class GameController : MonoBehaviour
                         {
                             if (squaresBidi[column, row].name == upSquare.name && squaresBidi[column, row].name == downSquare.name)
                             {
-                                upSquare.GetComponent<Rigidbody2D>().isKinematic = false;
-                                squaresBidi[column, row].GetComponent<Rigidbody2D>().isKinematic = false;
-                                downSquare.GetComponent<Rigidbody2D>().isKinematic = false;
+                                SquareFalling(upSquare);
+                                SquareFalling(squaresBidi[column, row]);
+                                SquareFalling(downSquare);
 
                                 squaresBidi[column, row - 1] = null;
                                 squaresBidi[column, row] = null;
-                                squaresBidi[column, row + 1] = null;
-
-                                countdown += 3;
-                                countdownTxt.text = countdown.ToString();
+                                squaresBidi[column, row + 1] = null;                                
                             }
                         }
                                                
@@ -331,8 +329,27 @@ public class GameController : MonoBehaviour
         }       
     }
 
+    void SquareFalling(GameObject name)
+    {
+        name.GetComponent<SpriteRenderer>().sortingLayerName = "SquaresFalling";
+        name.GetComponent<Rigidbody2D>().isKinematic = false;
+
+        if (countdown >= countFinal)
+        {
+            LoadScreens("ScreenWin");
+        }
+        else
+        {
+            countdown += 3;
+            countdownTxt.text = countdown.ToString();
+            fxSource.PlayOneShot(fxMatch);
+        }
+    }
+
     void LoadScreens(string name)
     {
         SceneManager.LoadScene(name);
     }
+
+
 }
