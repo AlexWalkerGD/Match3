@@ -6,6 +6,7 @@ public class Square : MonoBehaviour
 {
 
     private GameController gameController;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -21,6 +22,9 @@ public class Square : MonoBehaviour
     void OnBecameInvisible()
     {
         gameController.isMatching = false;
+        gameController.isSwap = false;
+        gameController.firstSquareTouched = null;
+        gameController.secondSquareTouched = null;
         Destroy(this.gameObject);
     }
 }

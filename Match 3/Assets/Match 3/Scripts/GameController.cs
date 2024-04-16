@@ -19,6 +19,11 @@ public class GameController : MonoBehaviour
     public GameObject[]  allSquares;
     public GameObject    nullSquare;
     public GameObject    iceSquare;
+    public GameObject    bombSquare;
+
+    //Movement to Refreshing Grid
+    [Header("Refresh Grid")]
+    public  bool        isRefreshingGrid = false;
 
     //Swap squares
     [Header("Swap Squares")]
@@ -27,13 +32,15 @@ public class GameController : MonoBehaviour
     public GameObject[,] squaresBidi;
     public float         speedSwap;
     public bool          isMoving = false;
+    public bool          isSwap = false;
     private Vector3      tempPosition;
     private Vector3      tempPosition2;
+    public int           numberMatchs = 0;
+
 
     //Match squares
     [Header("Match")]
     public bool    isMatching = false;
-    private int    comboMatch;
 
     //Settings UI
     [Header("UI")]
@@ -42,6 +49,7 @@ public class GameController : MonoBehaviour
     public int      countdown;
     public Text     countdownTxt;
     public int      countFinal;
+    private ShowScore showScore;
 
     //AudioSource
     [Header("Audio Source")]
@@ -57,6 +65,7 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
+        showScore = FindObjectOfType(typeof(ShowScore)) as ShowScore;
         CreateGrid();
         timerLevel = timer;
     }
@@ -80,12 +89,41 @@ public class GameController : MonoBehaviour
 
             if(firstSquareTouched.transform.position == tempPosition2)
             {
-                isMoving = false;
-                firstSquareTouched = null;
-                secondSquareTouched = null;
-            }
+                if (secondSquareTouched.GetComponent<SpriteRenderer>().sprite.name == "whitSprite_0")
+                {                   
 
+                    BurstBomb((int)secondSquareTouched.transform.position.x);
+                }
+
+                if (firstSquareTouched.GetComponent<SpriteRenderer>().sprite.name == "whitSprite_0")
+                {
+                    BurstBomb((int)firstSquareTouched.transform.position.x);
+                }
+                isMoving = false;
+            }
         }
+
+        
+
+       /* if (isRefreshingGrid)
+        {
+            if (!isMatching)
+            {
+                isMoving = true;
+                firstSquareTouched.transform.position = Vector3.MoveTowards(firstSquareTouched.transform.position, tempPosition, speedSwap);
+                secondSquareTouched.transform.position = Vector3.MoveTowards(secondSquareTouched.transform.position, tempPosition2, speedSwap);
+
+                if (firstSquareTouched.transform.position == tempPosition)
+                {
+                    isRefreshingGrid = false;
+                    isMoving = false;
+                    isSwap = false;
+
+                    firstSquareTouched = null;
+                    secondSquareTouched = null;
+                }
+            }
+        }*/
 
         ReadGrid();
 
@@ -138,6 +176,14 @@ public class GameController : MonoBehaviour
                     Swap();
                 }
             }
+        }
+    }
+
+    void BurstBomb(int X)
+    {
+        for (int row = 0; row < numberRows; row++)
+        {
+            Destroy(squaresBidi[X, row]);            
         }
     }
 
@@ -217,13 +263,19 @@ public class GameController : MonoBehaviour
 
     void Swap()
     {
-        tempPosition = firstSquareTouched.transform.position;
-        tempPosition2 = secondSquareTouched.transform.position;  
+        if (!isSwap)
+        {
+            numberMatchs = 0;
 
-        isMoving = true;
+            tempPosition = firstSquareTouched.transform.position;
+            tempPosition2 = secondSquareTouched.transform.position;
+
+            isMoving = true;             
+
+            squaresBidi[(int)tempPosition.x, (int)tempPosition.y * -1] = secondSquareTouched;
+            squaresBidi[(int)tempPosition2.x, (int)tempPosition2.y * -1] = firstSquareTouched;
+        }
         
-        squaresBidi[(int)tempPosition.x, (int)tempPosition.y * -1] = secondSquareTouched;
-        squaresBidi[(int)tempPosition2.x, (int)tempPosition2.y * -1] = firstSquareTouched;
     }
 
     void ReadGrid()
@@ -249,7 +301,7 @@ public class GameController : MonoBehaviour
                         {
                             if(squaresBidi[column, row - 1].GetComponent<SpriteRenderer>().sprite.name != "iceSprite_0")
                             {
-                                squaresBidi[column, row - 1].transform.position = new Vector3(column, -row, 0);
+                                squaresBidi[column, row - 1].transform.position = new Vector3(column, -row,0);                          
                                 squaresBidi[column, row] = squaresBidi[column, row - 1];
                                 squaresBidi[column, row - 1] = null;
                             }
@@ -319,9 +371,9 @@ public class GameController : MonoBehaviour
             for (int row = 0; row < numberRows; row++)
             {
                 //Horizontal
-                if(column > 0 && column < numberColumns - 1)
+                if (column > 0 && column < numberColumns - 1)
                 {
-                    if (squaresBidi[column -1, row] != null && squaresBidi[column, row] != null && squaresBidi[column + 1, row] != null)
+                    if (squaresBidi[column - 1, row] != null && squaresBidi[column, row] != null && squaresBidi[column + 1, row] != null)
                     {
                         GameObject leftSquare = squaresBidi[column - 1, row];
                         GameObject rightSquare = squaresBidi[column + 1, row];
@@ -331,6 +383,12 @@ public class GameController : MonoBehaviour
                             if (squaresBidi[column, row].name == leftSquare.name && squaresBidi[column, row].name == rightSquare.name)
                             {
                                 isMatching = true;
+                                numberMatchs++;
+
+                                if (numberMatchs > 1)
+                                {
+                                    showScore.ShowCanva(numberMatchs);
+                                }
 
                                 SquareFalling(leftSquare);
                                 SquareFalling(squaresBidi[column, row]);
@@ -348,17 +406,28 @@ public class GameController : MonoBehaviour
                                 }
 
                                 squaresBidi[column - 1, row] = null;
-                                squaresBidi[column, row] = null;
-                                squaresBidi[column +1, row] = null;                      
+                                squaresBidi[column + 1, row] = null;
+
+                                if (numberMatchs >= 3)
+                                {
+                                    GameObject newSquare = Instantiate(bombSquare, new Vector3(column, -row, 0), Quaternion.identity);
+                                    squaresBidi[column, row] = newSquare;
+                                }
+                                else
+                                {
+                                    squaresBidi[column, row] = null;
+                                }
+
+                                isSwap = false;
                             }
-                        }                       
-                    }                   
+                        }
+                    }
                 }
 
                 //Vertical
                 if (row > 0 && row < numberColumns - 1)
                 {
-                    if (squaresBidi[column, row -1] != null && squaresBidi[column, row] != null && squaresBidi[column, row + 1] != null)
+                    if (squaresBidi[column, row - 1] != null && squaresBidi[column, row] != null && squaresBidi[column, row + 1] != null)
                     {
                         GameObject upSquare = squaresBidi[column, row - 1];
                         GameObject downSquare = squaresBidi[column, row + 1];
@@ -367,6 +436,9 @@ public class GameController : MonoBehaviour
                         {
                             if (squaresBidi[column, row].name == upSquare.name && squaresBidi[column, row].name == downSquare.name)
                             {
+                                isMatching = true;
+                                numberMatchs++;
+
                                 SquareFalling(upSquare);
                                 SquareFalling(squaresBidi[column, row]);
                                 SquareFalling(downSquare);
@@ -383,15 +455,27 @@ public class GameController : MonoBehaviour
                                 }
 
                                 squaresBidi[column, row - 1] = null;
-                                squaresBidi[column, row] = null;
-                                squaresBidi[column, row + 1] = null;                                
+                                squaresBidi[column, row + 1] = null;
+
+                                if (numberMatchs >= 3)
+                                {
+                                    GameObject newSquare = Instantiate(bombSquare, new Vector3(column, -row, 0), Quaternion.identity);
+                                    squaresBidi[column, row] = newSquare;
+                                }
+                                else
+                                {
+                                    squaresBidi[column, row] = null;
+                                }
+
+                                isSwap = false;
                             }
                         }
-                                               
-                    }                   
+
+                    }
                 }
             }
-        }       
+
+        }
     }
 
     void SquareFalling(GameObject name)
@@ -405,6 +489,4 @@ public class GameController : MonoBehaviour
     {
         SceneManager.LoadScene(name);
     }
-
-
 }
