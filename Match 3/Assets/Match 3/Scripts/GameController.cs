@@ -20,6 +20,8 @@ public class GameController : MonoBehaviour
     public GameObject    nullSquare;
     public GameObject    iceSquare;
     public GameObject    bombSquare;
+    public GameObject    effectParticleSystem;
+    public ParticleSystem particle;
 
     //Movement to Refreshing Grid
     [Header("Refresh Grid")]
@@ -66,6 +68,7 @@ public class GameController : MonoBehaviour
     void Start()
     {
         showScore = FindObjectOfType(typeof(ShowScore)) as ShowScore;
+        particle = GetComponent<ParticleSystem>();
         CreateGrid();
         timerLevel = timer;
     }
@@ -181,6 +184,7 @@ public class GameController : MonoBehaviour
 
     void BurstBomb(int X)
     {
+        particle.Play();
         for (int row = 0; row < numberRows; row++)
         {
             Destroy(squaresBidi[X, row]);            

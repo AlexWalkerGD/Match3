@@ -1610,6 +1610,8 @@ MonoBehaviour:
   nullSquare: {fileID: 1224400586874895525, guid: 865f0278f0901994a83b63867490b8ae, type: 3}
   iceSquare: {fileID: 6511281013330773833, guid: ebce43976839d994da8f37f02d28fc33, type: 3}
   bombSquare: {fileID: 7049592039017558304, guid: 57f52bdc97ed16e429b97cb8d7fb1aa0, type: 3}
+  effectParticleSystem: {fileID: 3168858105280246486, guid: 6c2086c75543b72449e6aa958ab82a20, type: 3}
+  particle: {fileID: 6583179321968124169, guid: 6c2086c75543b72449e6aa958ab82a20, type: 3}
   isRefreshingGrid: 0
   firstSquareTouched: {fileID: 0}
   secondSquareTouched: {fileID: 0}
