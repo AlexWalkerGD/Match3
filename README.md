@@ -18,6 +18,12 @@ A match 3 game, where players will be challenged to match three or more similar 
 
 ## Running the Game
 
+### Launch the game: 
+
+1. Follow directory:
+
+   ```bash
+    Match 3/exe/Match 3.exe
 
 ### Requirements
 - Visual Studio 2022 installed
