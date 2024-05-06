@@ -27,7 +27,7 @@ A match 3 game, where players will be challenged to match three or more similar 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/match-3-game.git
+   git clone https://github.com/AlexWalkerGD/Match3_Unity.git
 
 ## Contributing
 Contributions are welcome! If you'd like to contribute to this project, please follow these steps:
