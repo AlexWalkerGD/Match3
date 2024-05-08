@@ -43,6 +43,7 @@ public class GameController : MonoBehaviour
     //Match squares
     [Header("Match")]
     public bool    isMatching = false;
+    public bool    hasMatch = false;
 
     //Settings UI
     [Header("UI")]
@@ -103,34 +104,37 @@ public class GameController : MonoBehaviour
                     BurstBomb((int)firstSquareTouched.transform.position.x);
                 }
                 isMoving = false;
+                isSwap = true;
+
             }
         }
 
+      
         
 
-       /* if (isRefreshingGrid)
+        if (isRefreshingGrid)
         {
             if (!isMatching)
             {
-                isMoving = true;
                 firstSquareTouched.transform.position = Vector3.MoveTowards(firstSquareTouched.transform.position, tempPosition, speedSwap);
                 secondSquareTouched.transform.position = Vector3.MoveTowards(secondSquareTouched.transform.position, tempPosition2, speedSwap);
 
                 if (firstSquareTouched.transform.position == tempPosition)
                 {
                     isRefreshingGrid = false;
-                    isMoving = false;
-                    isSwap = false;
+
+                    squaresBidi[(int)tempPosition.x, (int)tempPosition.y * -1] = firstSquareTouched;
+                    squaresBidi[(int)tempPosition2.x, (int)tempPosition2.y * -1] = secondSquareTouched;
 
                     firstSquareTouched = null;
                     secondSquareTouched = null;
                 }
             }
-        }*/
+        }
 
         ReadGrid();
 
-        if (!isMoving && !isMatching)
+        if (!isMoving && !isMatching && !isRefreshingGrid)
         {
             Match();
         }
@@ -184,7 +188,7 @@ public class GameController : MonoBehaviour
 
     void BurstBomb(int X)
     {
-        particle.Play();
+        //particle.Play();
         for (int row = 0; row < numberRows; row++)
         {
             Destroy(squaresBidi[X, row]);            
@@ -388,6 +392,7 @@ public class GameController : MonoBehaviour
                             {
                                 isMatching = true;
                                 numberMatchs++;
+                                hasMatch = true;                               
 
                                 if (numberMatchs > 1)
                                 {
@@ -421,8 +426,6 @@ public class GameController : MonoBehaviour
                                 {
                                     squaresBidi[column, row] = null;
                                 }
-
-                                isSwap = false;
                             }
                         }
                     }
@@ -442,6 +445,7 @@ public class GameController : MonoBehaviour
                             {
                                 isMatching = true;
                                 numberMatchs++;
+                                hasMatch = true;
 
                                 SquareFalling(upSquare);
                                 SquareFalling(squaresBidi[column, row]);
@@ -470,13 +474,28 @@ public class GameController : MonoBehaviour
                                 {
                                     squaresBidi[column, row] = null;
                                 }
-
-                                isSwap = false;
                             }
                         }
 
                     }
                 }
+            }
+
+            if (column == numberColumns - 1 && !hasMatch)
+            {
+                if (isSwap) 
+                {
+                    Debug.Log("Acabou");
+                    isRefreshingGrid = true;
+                    isSwap = false;
+                }
+            }
+
+            if (column == numberColumns - 1 && hasMatch)
+            {
+                Debug.Log("teve match");
+                isSwap = false;
+                hasMatch = false;               
             }
 
         }

@@ -22,7 +22,6 @@ public class Square : MonoBehaviour
     void OnBecameInvisible()
     {
         gameController.isMatching = false;
-        gameController.isSwap = false;
         gameController.firstSquareTouched = null;
         gameController.secondSquareTouched = null;
         Destroy(this.gameObject);
